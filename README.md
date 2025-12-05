@@ -178,7 +178,7 @@
 
 ## Architecture
 
-![Architecture](Images/pdf_chat.png)
+![Architecture](Images/architecture.svg)
 
 ### Key Components
 
