@@ -91,7 +91,7 @@
 
 ### Document Processing
 
-- **Multi-Format Support**: PDF, DOCX, PPTX, HTML, CSV, TXT files
+- **Multi-Format Support**: PDF, CSV, TXT files
 
 - **Multi-Language OCR**: Support for multiple languages
 - **Document Viewer**: Built-in viewers for various file formats
@@ -121,7 +121,6 @@
 - **Database Optimization**: PostgreSQL with connection pooling
 - **Vector Search**: High-performance semantic search with Qdrant
 - **Background Processing**: Async document processing with Celery workers
-- **Caching**: Redis-based caching for embeddings, responses, and chat history
 - **Health Monitoring**: Comprehensive system monitoring
 - **Production Ready**: Multi-worker uvicorn configuration
 
@@ -144,12 +143,8 @@
 - **Axios** - HTTP client for API communication
 - **Zustand** - State management
 - **React Hook Form** - Form management
-- **Framer Motion** - Animations and transitions
 - **Tailwind CSS** - Utility-first CSS framework
 - **Flowbite React** - UI component library
-- **PDF.js** - PDF document viewing
-- **React PDF Viewer** - Advanced PDF functionality
-- **React Markdown** - Markdown rendering
 
 ### Backend
 
@@ -168,7 +163,6 @@
 - **OpenRouter API** - LLM provider (Mistral, Llama, etc.)
 - **Sentence Transformers** - Text embeddings (all-MiniLM-L6-v2)
 - **Cross-Encoder** - Re-ranking models (ms-marco-MiniLM-L-6-v2)
-- **EasyOCR/Tesseract** - OCR processing
 - **Hugging Face Transformers** - Model loading and inference
 
 ### DevOps & Monitoring
@@ -184,35 +178,7 @@
 
 ## Architecture
 
-```
-┌─────────────────┐
-│   React Frontend │
-│   (Port 3000)    │
-└────────┬────────┘
-         │ HTTP/REST
-         │
-┌────────▼─────────────────────────────────────┐
-│         FastAPI Backend (Port 8080)            │
-│  ┌──────────────────────────────────────────┐ │
-│  │  Authentication │ Documents │ Chat       │ │
-│  └──────────────────────────────────────────┘ │
-│  ┌──────────────────────────────────────────┐ │
-│  │  RAG Pipeline:                           │ │
-│  │  • Query Expansion                        │ │
-│  │  • Hybrid Retrieval (Dense + Sparse)     │ │
-│  │  • Re-ranking                             │ │
-│  │  • Cross-Encoder Verification            │ │
-│  │  • Context Assembly                      │ │
-│  └──────────────────────────────────────────┘ │
-└────────┬───────────────────────────────────────┘
-         │
-    ┌────┴────┬──────────┬──────────┬──────────┐
-    │         │          │          │          │
-┌───▼───┐ ┌──▼───┐ ┌─────▼────┐ ┌───▼───┐ ┌───▼───┐
-│Postgres│ │Redis │ │  Qdrant  │ │ MinIO │ │Celery │
-│  5432  │ │ 6379 │ │   6333   │ │ 9000  │ │Worker │
-└────────┘ └──────┘ └──────────┘ └───────┘ └───────┘
-```
+![Architecture](Images/pdf_chat.png)
 
 ### Key Components
 
@@ -221,7 +187,6 @@
 3. **RAG Pipeline**: Multi-stage retrieval and generation pipeline
 4. **Vector Database**: Qdrant for semantic search
 5. **Object Storage**: MinIO for document storage
-6. **Cache**: Redis for caching embeddings and responses
 7. **Task Queue**: Celery for background document processing
 8. **Monitoring**: Prometheus, Loki, and Grafana stack
 
@@ -372,43 +337,6 @@ python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 
 ---
 
-## Usage
-
-### 1. Create an Account
-
-1. Navigate to the registration page
-2. Create an account with email and password
-3. Log in to access the dashboard
-
-### 2. Upload Documents
-
-1. Click "Upload Document" in the dashboard
-2. Select your document (PDF, DOCX, PPTX, etc.)
-3. Wait for processing to complete (handled in background)
-4. View the document in the built-in viewer
-
-### 3. Chat with Documents
-
-1. Select a document from your library
-2. Click "Chat with Document"
-3. Ask questions about the document content
-4. Get AI-powered responses with source citations
-
-### 4. Multi-Document Analysis
-
-1. Navigate to "Multi-Document Chat"
-2. Select multiple documents
-3. Ask questions that span across all selected documents
-4. Get comprehensive answers synthesizing information from all sources
-
-### 5. General Chat
-
-1. Navigate to "General Chat"
-2. Ask questions without selecting specific documents
-3. The system searches across all your documents
-4. Get answers with source attribution
-
----
 
 ## API Documentation
 
@@ -436,8 +364,7 @@ GET    /api/document/{id}/download    # Download document
 ```bash
 POST /api/chat/{file_id}                    # Chat with single document
 GET  /api/chat/messages/{file_id}           # Get chat history
-POST /api/chat/multi-document               # Multi-document chat
-GET  /api/chat/multi-document/messages      # Multi-doc chat history
+
 POST /api/chat/general                      # General chat (all documents)
 GET  /api/chat/general/messages             # General chat history
 ```
@@ -458,11 +385,6 @@ GET /metrics               # Prometheus metrics endpoint
 
 ---
 
-## Deployment
-
-### Production Deployment
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
 
 #### Quick Start
 
@@ -573,32 +495,7 @@ curl http://localhost:8080/metrics
 
 ## Testing
 
-### Backend Tests
 
-```bash
-cd backend
-
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=app --cov-report=html
-
-# Run specific test file
-pytest tests/test_auth.py
-```
-
-### Frontend Tests
-
-```bash
-cd frontend
-
-# Run tests
-npm test
-
-# Run tests with coverage
-npm test -- --coverage
-```
 
 ### Integration Tests
 
@@ -614,62 +511,6 @@ curl -X POST http://localhost:8080/api/auth/register \
 
 ---
 
-## Troubleshooting
-
-### Common Issues
-
-#### Backend Issues
-
-**Database connection failed:**
-```bash
-docker-compose logs postgres
-# Check DATABASE_URL in .env
-```
-
-**MinIO connection failed:**
-```bash
-docker-compose logs minio
-# Verify MINIO_ENDPOINT and credentials
-```
-
-**Celery worker not processing tasks:**
-```bash
-docker-compose logs celery_worker_documents
-# Check Redis connection
-```
-
-#### Frontend Issues
-
-**API connection errors:**
-- Verify `REACT_APP_API_URL` in `.env`
-- Check CORS configuration in backend
-- Ensure backend is running
-
-**Build errors:**
-```bash
-rm -rf node_modules package-lock.json
-npm install
-npm run build
-```
-
-### Performance Issues
-
-- **Slow responses**: Check database connection pool, increase workers
-- **High memory**: Review document chunk sizes, adjust cache TTL
-- **Slow document processing**: Increase Celery worker concurrency
-
-### Logs
-
-```bash
-# Backend logs
-tail -f backend/logs/hcp_backend.log
-
-# Celery logs
-tail -f backend/logs/celery_worker.log
-
-# Docker logs
-docker-compose logs -f backend
-```
 
 ---
 
@@ -680,10 +521,9 @@ Contributions are welcome! Please follow these steps:
 1. **Fork the repository**
 2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
 3. **Make your changes**
-4. **Run tests**: `pytest` (backend) and `npm test` (frontend)
-5. **Commit changes**: `git commit -m 'Add amazing feature'`
-6. **Push to branch**: `git push origin feature/amazing-feature`
-7. **Open a Pull Request**
+4. **Commit changes**: `git commit -m 'Add amazing feature'`
+5. **Push to branch**: `git push origin feature/amazing-feature`
+6. **Open a Pull Request**
 
 ### Code Guidelines
 
@@ -715,10 +555,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Documentation**: See [DEPLOYMENT.md](DEPLOYMENT.md) for deployment guide
+
 - **API Docs**: http://localhost:8080/docs (when running)
-- **Issues**: [GitHub Issues](https://github.com/your-username/ragio/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/ragio/discussions)
+- **Issues**: [GitHub Issues](https://github.com/simoderyouch/ragio/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/simoderyouch/ragio/discussions)
 
 ---
 
@@ -729,7 +569,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Real-time collaboration
 - [ ] Advanced analytics and insights
 - [ ] Mobile app (React Native)
-- [ ] Enhanced OCR with more languages
+- [ ] OCR with more languages
 - [ ] Document versioning
 - [ ] Export chat conversations
 - [ ] Webhook support for integrations
