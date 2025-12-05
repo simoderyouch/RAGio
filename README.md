@@ -178,7 +178,7 @@
 
 ## Architecture
 
-![Architecture](Images/architecture.svg)
+![Architecture](Images/architecture.png)
 
 ### Key Components
 
