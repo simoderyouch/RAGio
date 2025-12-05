@@ -8,9 +8,7 @@ from app.config import DATABASE_URL
 from app.utils.logger import log_info, log_error
 import time
 
-# Enhanced database configuration with connection pooling
-# Use lazy connection - don't connect until first use
-# This prevents connection attempts at import time
+
 engine = create_engine(
     DATABASE_URL,
     poolclass=QueuePool,
@@ -80,8 +78,7 @@ def receive_checkout(dbapi_connection, connection_record, connection_proxy):
 def receive_checkin(dbapi_connection, connection_record):
     log_info("Database connection checked in", context="database")
 
-# Lazy table creation - only create tables when first database connection is made
-# This prevents connection attempts at import time (which breaks Celery workers)
+
 _tables_created = False
 
 def ensure_tables_created():
@@ -93,8 +90,7 @@ def ensure_tables_created():
             _tables_created = True
             log_info("Database tables created/verified", context="database")
         except Exception as e:
-            # In lightweight Celery workers, database might not be available yet
-            # This is OK - tables will be created when database is accessed
+
             log_error(e, context="database_table_creation", message="Failed to create tables (will retry on first use)")
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
