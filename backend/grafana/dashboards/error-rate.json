@@ -1,0 +1,158 @@
+{
+  "uid": "error-rate",
+  "title": "Error Rate",
+  "tags": ["observability", "errors", "prometheus"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "editable": true,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Error Rate (5xx)",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "expr": "rate(http_requests_total{status_code=~\"5..\"}[5m])",
+          "legendFormat": "{{method}} {{endpoint}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {}
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Error Percentage",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "expr": "sum(rate(http_requests_total{status_code=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m])) * 100",
+          "legendFormat": "Error %",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {}
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Status Code Distribution",
+      "type": "piechart",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "expr": "sum by (status_code) (rate(http_requests_total[5m]))",
+          "legendFormat": "{{status_code}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Error Rate from Logs",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(rate({job=\"backend\", service=\"hcp_backend\", level=\"error\"}[5m]))",
+          "legendFormat": "API Errors/sec",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(rate({job=\"celery\", service=\"celery_worker\", level=\"error\"}[5m]))",
+          "legendFormat": "Celery Errors/sec",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {}
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Recent API Errors (Logs)",
+      "type": "logs",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 8},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"backend\", service=\"hcp_backend\", level=\"error\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      }
+    },
+    {
+      "id": 6,
+      "title": "Recent Celery Errors (Logs)",
+      "type": "logs",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 24},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"celery\", service=\"celery_worker\", level=\"error\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      }
+    },
+    {
+      "id": 7,
+      "title": "Top Exception Types",
+      "type": "table",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 16},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=~\"backend|celery\", level=\"error\"} | json | topk(10, sum(count_over_time([5m])) by (exception_type))",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

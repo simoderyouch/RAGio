@@ -1,0 +1,62 @@
+
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic>=2.12.0
+pydantic-settings>=2.12.0
+
+# Database
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.13.1
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==3.2.0
+python-multipart==0.0.6
+
+# AI/ML Libraries
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+langchain-huggingface>=0.0.8
+sentence-transformers>=3.0.0
+huggingface-hub>=0.20.3 
+
+# Vector Database & Storage
+qdrant-client
+minio
+
+# File Processing (Python 3.12 Compatible)
+python-docx==1.1.0
+pypdf==3.17.4
+docx2pdf==0.1.8
+pandas==2.1.4
+numpy>=1.26.0  
+
+# Background Tasks
+celery>=5.3.0
+Pillow==10.1.0
+redis>=5.0.0
+flower>=2.0.0
+
+# Utilities
+python-dotenv==1.0.0
+beautifulsoup4==4.12.2
+langdetect==1.0.9
+psutil==5.9.6
+
+# API Keys
+openai>=1.55.0
+
+# Rate Limiting
+slowapi>=0.1.9
+
+# Observability
+prometheus-client>=0.19.0
+
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+flake8==6.1.0

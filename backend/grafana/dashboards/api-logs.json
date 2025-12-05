@@ -1,0 +1,189 @@
+{
+  "uid": "api-logs",
+  "title": "API Logs Analysis",
+  "tags": ["observability", "api", "logs", "loki"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "editable": true,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Log Volume Over Time",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"backend\", service=\"hcp_backend\"}[1m]))",
+          "legendFormat": "Total Logs",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"backend\", service=\"hcp_backend\", level=\"error\"}[1m]))",
+          "legendFormat": "Errors",
+          "refId": "B"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"backend\", service=\"hcp_backend\", level=\"warning\"}[1m]))",
+          "legendFormat": "Warnings",
+          "refId": "C"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"backend\", service=\"hcp_backend\", level=\"info\"}[1m]))",
+          "legendFormat": "Info",
+          "refId": "D"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {}
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Log Level Distribution",
+      "type": "piechart",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"backend\", service=\"hcp_backend\"}[5m])) by (level)",
+          "legendFormat": "{{level}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Error Rate",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(rate({job=\"backend\", service=\"hcp_backend\", level=\"error\"}[5m]))",
+          "legendFormat": "Errors/sec",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {}
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Top Error Messages",
+      "type": "table",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"backend\", service=\"hcp_backend\", level=\"error\"} | json | topk(10, sum(count_over_time([5m])) by (message))",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Errors by Module",
+      "type": "bargauge",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"backend\", service=\"hcp_backend\", level=\"error\"} | json | sum(count_over_time([5m])) by (module)",
+          "legendFormat": "{{module}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {}
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Errors by Context",
+      "type": "bargauge",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"backend\", service=\"hcp_backend\", level=\"error\"} | json | sum(count_over_time([5m])) by (context)",
+          "legendFormat": "{{context}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {}
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Recent Errors",
+      "type": "logs",
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 24},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"backend\", service=\"hcp_backend\", level=\"error\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      }
+    },
+    {
+      "id": 8,
+      "title": "API Request Logs",
+      "type": "logs",
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 36},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"backend\", service=\"hcp_backend\"} | json | context=~\"auth.*|api.*|request.*\"",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      }
+    }
+  ]
+}
+

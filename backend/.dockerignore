@@ -1,0 +1,93 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+env/
+venv/
+ENV/
+.venv
+.env
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Development tools
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Grafana (not needed in images)
+grafana/
+
+# Scripts (not needed in images, except download_models.py for backend-image)
+scripts/
+*.sh
+!scripts/download_models.py
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# HuggingFace cache - excluded by default
+# To include it in backend-image: comment out the line below before building
+#huggingface
+
+# Large files that shouldn't be in images
+*.pdf
+*.docx
+*.pptx
+*.xlsx
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Other
+init.sql
+# Note: start.py is needed for backend-image, so we don't exclude it

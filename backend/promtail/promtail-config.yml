@@ -1,0 +1,157 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: backend-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: backend
+          service: hcp_backend
+          __path__: /var/log/app/hcp_backend.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            logger: logger
+            message: message
+            module: module
+            function: function
+            line: line
+            request_id: request_id
+            trace_id: trace_id
+            span_id: span_id
+            user_id: user_id
+            endpoint: endpoint
+            method: method
+            context: context
+      - labels:
+          level:
+          logger:
+          module:
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+          
+  - job_name: backend-errors
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: backend
+          service: hcp_backend
+          level: error
+          __path__: /var/log/app/hcp_backend_errors.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            logger: logger
+            message: message
+            module: module
+            function: function
+            line: line
+            request_id: request_id
+            trace_id: trace_id
+            span_id: span_id
+            user_id: user_id
+            endpoint: endpoint
+            method: method
+            context: context
+            exception: exception
+      - labels:
+          level:
+          logger:
+          module:
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+          
+  - job_name: celery-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: celery
+          service: celery_worker
+          __path__: /var/log/app/celery_worker.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            logger: logger
+            message: message
+            module: module
+            function: function
+            line: line
+            task_id: task_id
+            task_name: task_name
+            queue: queue
+            event: event
+            status: status
+            retries: retries
+            duration_seconds: duration_seconds
+            exception_type: exception_type
+            exception_message: exception_message
+      - labels:
+          level:
+          logger:
+          task_name:
+          queue:
+          event:
+          status:
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+
+  - job_name: celery-errors
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: celery
+          service: celery_worker
+          level: error
+          __path__: /var/log/app/celery_worker_errors.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            logger: logger
+            message: message
+            module: module
+            function: function
+            line: line
+            task_id: task_id
+            task_name: task_name
+            queue: queue
+            event: event
+            status: status
+            retries: retries
+            duration_seconds: duration_seconds
+            exception_type: exception_type
+            exception_message: exception_message
+            exception: exception
+      - labels:
+          level:
+          logger:
+          task_name:
+          queue:
+          event:
+          status:
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+

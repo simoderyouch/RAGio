@@ -1,0 +1,271 @@
+{
+  "uid": "celery-logs",
+  "title": "Celery Logs Analysis",
+  "tags": ["observability", "celery", "logs", "loki"],
+  "timezone": "browser",
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "editable": true,
+  "schemaVersion": 38,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Log Volume Over Time",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"celery\", service=\"celery_worker\"}[1m]))",
+          "legendFormat": "Total Logs",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"celery\", service=\"celery_worker\", level=\"error\"}[1m]))",
+          "legendFormat": "Errors",
+          "refId": "B"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"celery\", service=\"celery_worker\", level=\"warning\"}[1m]))",
+          "legendFormat": "Warnings",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {}
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Task Events Over Time",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"celery\", service=\"celery_worker\", event=\"task_start\"}[1m]))",
+          "legendFormat": "Task Starts",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"celery\", service=\"celery_worker\", event=\"task_complete\", status=\"success\"}[1m]))",
+          "legendFormat": "Task Success",
+          "refId": "B"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"celery\", service=\"celery_worker\", event=\"task_failure\"}[1m]))",
+          "legendFormat": "Task Failures",
+          "refId": "C"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"celery\", service=\"celery_worker\", event=\"task_retry\"}[1m]))",
+          "legendFormat": "Task Retries",
+          "refId": "D"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {}
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Task Success Rate",
+      "type": "stat",
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 8},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"celery\", service=\"celery_worker\", event=\"task_complete\", status=\"success\"}[5m])) / (sum(count_over_time({job=\"celery\", service=\"celery_worker\", event=\"task_complete\"}[5m])) + 1) * 100",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "red"},
+              {"value": 80, "color": "yellow"},
+              {"value": 95, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Failed Tasks Count",
+      "type": "stat",
+      "gridPos": {"h": 6, "w": 8, "x": 8, "y": 8},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "sum(count_over_time({job=\"celery\", service=\"celery_worker\", event=\"task_failure\"}[5m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 1, "color": "yellow"},
+              {"value": 5, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Average Task Duration",
+      "type": "stat",
+      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 8},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"celery\", service=\"celery_worker\", event=\"task_complete\"} | json | duration_seconds | unwrap duration_seconds | avg",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 2
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Top Failing Tasks",
+      "type": "table",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"celery\", service=\"celery_worker\", event=\"task_failure\"} | json | topk(10, sum(count_over_time([5m])) by (task_name))",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Tasks by Queue",
+      "type": "piechart",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"celery\", service=\"celery_worker\", event=\"task_start\"} | json | sum(count_over_time([5m])) by (queue)",
+          "legendFormat": "{{queue}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Task Duration Distribution",
+      "type": "histogram",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"celery\", service=\"celery_worker\", event=\"task_complete\"} | json | duration_seconds | unwrap duration_seconds",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Error Rate by Task",
+      "type": "bargauge",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 22},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"celery\", service=\"celery_worker\", event=\"task_failure\"} | json | sum(count_over_time([5m])) by (task_name)",
+          "legendFormat": "{{task_name}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Recent Task Failures",
+      "type": "logs",
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 30},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"celery\", service=\"celery_worker\", event=\"task_failure\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      }
+    },
+    {
+      "id": 11,
+      "title": "All Task Logs",
+      "type": "logs",
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 42},
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "expr": "{job=\"celery\", service=\"celery_worker\"} | json | event=~\"task_.*\"",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      }
+    }
+  ]
+}
+

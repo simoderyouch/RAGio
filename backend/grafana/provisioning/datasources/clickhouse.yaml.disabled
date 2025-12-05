@@ -1,0 +1,27 @@
+apiVersion: 1
+
+# Note: This datasource will be provisioned after the ClickHouse plugin is installed
+# If provisioning fails initially, the plugin will install and Grafana will retry
+datasources:
+  - name: ClickHouse
+    uid: ClickHouse
+    type: vertamedia-clickhouse-datasource
+    access: proxy
+    url: http://clickhouse:8123
+    database: default
+    user: default
+    # Do not set password field - ClickHouse default user has no password
+    isDefault: true
+    editable: true
+    version: 1
+    jsonData:
+      defaultDatabase: default
+      port: 8123
+      server: clickhouse
+      timeout: 30
+      maxOpenConns: 100
+      maxIdleConns: 100
+      connMaxLifetime: 14400
+      tlsSkipVerify: false
+    secureJsonData: {}
+
