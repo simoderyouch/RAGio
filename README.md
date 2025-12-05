@@ -92,8 +92,6 @@
 ### Document Processing
 
 - **Multi-Format Support**: PDF, CSV, TXT files
-
-- **Multi-Language OCR**: Support for multiple languages
 - **Document Viewer**: Built-in viewers for various file formats
 - **File Management**: Secure storage with MinIO object storage
 - **Background Processing**: Async document processing with Celery
